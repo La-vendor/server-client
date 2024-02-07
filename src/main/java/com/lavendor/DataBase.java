@@ -15,21 +15,8 @@ public class DataBase {
         try {
             return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Could not establish a connection to the database server.");
             return null;
         }
     }
-
-    public static void closeConnection(Connection connection){
-        try{
-            if(connection != null && !connection.isClosed()){
-                connection.close();
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-
-
 }
