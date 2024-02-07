@@ -2,6 +2,8 @@ package com.lavendor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lavendor.model.InsuranceOffer;
+import com.lavendor.model.Vehicle;
 
 import java.io.*;
 import java.net.Socket;
@@ -38,27 +40,36 @@ public class Client {
             String userId = scanner.nextLine();
 
             client.sendUserId(userId);
-            client.listenForMessage();
-            System.out.println();
-            client.listenForVehicleList();
-            client.listenForInsuranceOffersList();
-            client.displayVehiclesAndOffers();
+            if(client.listenForMessage()){
+                client.listenForVehicleList();
+                client.listenForInsuranceOffersList();
+                client.displayVehiclesAndOffers();
+            }
         }
-
     }
 
-    private void displayVehiclesAndOffers() {
-        for (Vehicle vehicle : vehicleList) {
-            System.out.println("     Brand: " + vehicle.getBrand() + ", Model: " + vehicle.getModel());
-            boolean offersCheck = false;
-            for (InsuranceOffer insuranceOffer : insuranceOfferList) {
-                if (insuranceOffer.getVehicleId() == vehicle.getId()) {
-                    System.out.println("            Insurer: " + insuranceOffer.getInsurer() + ", Price: " + insuranceOffer.getPrice());
-                    offersCheck = true;
-                }
-            }
-            if (!offersCheck) System.out.println("            *No available insurance offers for this vehicle*");
-            System.out.println();
+    public void sendUserId(String userId) {
+        try {
+            bufferedWriter.write(userId);
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            closeAll();
+            System.err.println("Error sending user ID to the client: " + e.getMessage());
+        }
+    }
+
+    public boolean listenForMessage() {
+        String messageFromServer;
+
+        try {
+            messageFromServer = bufferedReader.readLine();
+            System.out.println(messageFromServer + "\n");
+            return messageFromServer.contains("Insurance offers for");
+        } catch (IOException e) {
+            closeAll();
+            System.err.println("Error listening for message from the server: " + e.getMessage());
+            return false;
         }
     }
 
@@ -85,24 +96,18 @@ public class Client {
         }
     }
 
-    public void sendUserId(String userId) {
-        try {
-            bufferedWriter.write(userId);
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            closeAll();
-        }
-    }
-
-    public void listenForMessage() {
-        String messageFromServer;
-
-        try {
-            messageFromServer = bufferedReader.readLine();
-            System.out.println(messageFromServer);
-        } catch (IOException e) {
-            closeAll();
+    private void displayVehiclesAndOffers() {
+        for (Vehicle vehicle : vehicleList) {
+            System.out.println("     Brand: " + vehicle.getBrand() + ", Model: " + vehicle.getModel());
+            boolean offersCheck = false;
+            for (InsuranceOffer insuranceOffer : insuranceOfferList) {
+                if (insuranceOffer.getVehicleId() == vehicle.getId()) {
+                    System.out.println("            Insurer: " + insuranceOffer.getInsurer() + ", Price: " + insuranceOffer.getPrice());
+                    offersCheck = true;
+                }
+            }
+            if (!offersCheck) System.out.println("            *No available insurance offers for this vehicle*");
+            System.out.println();
         }
     }
 

@@ -1,4 +1,4 @@
-package com.lavendor;
+package com.lavendor.model;
 
 public class User {
     private long id;
