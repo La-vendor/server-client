@@ -108,8 +108,8 @@ public class Server {
         }
     }
 
-    private String listenForUserId() throws IOException {
-        String userId = null;
+    private String listenForUserId(){
+        String userId;
         try {
             userId = bufferedReader.readLine();
             System.out.println("Received user ID :" + userId);

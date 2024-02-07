@@ -66,10 +66,11 @@ public class Client {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String vehicleListJSON = bufferedReader.readLine();
-            vehicleList = objectMapper.readValue(vehicleListJSON, new TypeReference<List<Vehicle>>() {
+            vehicleList = objectMapper.readValue(vehicleListJSON, new TypeReference<>() {
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("An error occurred while processing the JSON representation of the vehicle list: " + e.getMessage());
+
         }
     }
 
@@ -77,10 +78,10 @@ public class Client {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String insuranceOffersJSON = bufferedReader.readLine();
-            insuranceOfferList = objectMapper.readValue(insuranceOffersJSON, new TypeReference<List<InsuranceOffer>>() {
+            insuranceOfferList = objectMapper.readValue(insuranceOffersJSON, new TypeReference<>() {
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("An error occurred while processing the JSON representation of the insurance offers list: " + e.getMessage());
         }
     }
 
@@ -117,7 +118,7 @@ public class Client {
                 bufferedWriter.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("An error occurred while closing the socket and associated streams: " + e.getMessage());
         }
     }
 
