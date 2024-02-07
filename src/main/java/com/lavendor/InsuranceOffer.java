@@ -1,7 +1,5 @@
 package com.lavendor;
 
-import java.time.LocalDate;
-
 public class InsuranceOffer {
 
     private long id;
@@ -44,5 +42,12 @@ public class InsuranceOffer {
         this.price = price;
     }
 
-
+    @Override
+    public String toString() {
+        return "InsuranceOffer{" +
+                "vehicleId=" + vehicleId +
+                ", insurer='" + insurer + '\'' +
+                ", price=" + price +
+                '}';
+    }
 }

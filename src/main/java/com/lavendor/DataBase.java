@@ -8,9 +8,9 @@ public class DataBase {
 
     public static Connection connect() {
 
-        String jdbcUrl = "jdbc:postgresql://localhost:5432/ynsk";
+        String jdbcUrl = "jdbc:postgresql://localhost:5432/insurance_db";
         String username = "postgres";
-        String password = "0000";
+        String password = "Proxy3245!";
 
         try {
             return DriverManager.getConnection(jdbcUrl, username, password);

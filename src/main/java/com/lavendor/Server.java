@@ -3,10 +3,7 @@ package com.lavendor;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,54 +15,82 @@ public class Server {
 
     private Socket socket;
 
-    private long userId;
-
 
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
 
-    public void startServer() {
+    public void listenForClientConnection() {
         try {
-            while (!serverSocket.isClosed()) {
-                this.socket = serverSocket.accept();
-                System.out.println("Client connected");
+            socket = serverSocket.accept();
+            System.out.println("Client connected");
 
-                this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                this.userId = Long.parseLong(bufferedReader.readLine());
-            }
+            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void closeSocket() {
-        try {
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-
+            closeSocket();
         }
     }
 
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(3254);
         Server server = new Server(serverSocket);
-        server.startServer();
+
+        while (!serverSocket.isClosed()) {
+            server.listenForClientConnection();
+
+            while (!server.socket.isClosed()) {
+                String userId = server.listenForUserId();
+                server.writeMessage(userId);
+                server.readDataFromDB(userId);
+            }
+            server.closeSocket();
+        }
     }
 
-    public void readDataFromDB() {
+    private void writeMessage(String message) {
+        if (bufferedWriter != null) {
+            try {
+                bufferedWriter.write("Server received :" + message);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            } catch (IOException e) {
+                closeSocket();
+            }
+        }
+    }
+
+    private String listenForUserId() throws IOException {
+        String userId = null;
+        try {
+            userId = bufferedReader.readLine();
+            System.out.println("Received :" + userId);
+
+        } catch (IOException e) {
+            closeSocket();
+            System.out.println("Client disconnected ");
+            return null;
+        }
+        return userId;
+    }
+
+    public void readDataFromDB(String stringUserId) {
+        long userId = Long.parseLong(stringUserId);
+
         try (Connection connection = DataBase.connect()) {
-            System.out.println("Connected to Database.");
-            String userLogin = getLoginByUserId(connection, userId);
-            List<Vehicle> vehicleList = getVehiclesByLogin(connection,userLogin);
-            List<InsuranceOffer> insuranceOfferList = getInsuranceOffersByLogin(connection, userLogin);
 
-
+            if (connection != null) {
+//                System.out.println("Connected to Database.");
+                String userLogin = getLoginByUserId(connection, userId);
+                System.out.println(userLogin);
+                if (userLogin != null) {
+                    List<Vehicle> vehicleList = getVehiclesByLogin(connection, userLogin);
+                    for(Vehicle vehicle : vehicleList) System.out.println(vehicle.toString());
+                    List<InsuranceOffer> insuranceOfferList = getInsuranceOffersByLogin(connection, userLogin);
+                    for(InsuranceOffer insuranceOffer : insuranceOfferList) System.out.println(insuranceOffer.toString());
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -83,7 +108,8 @@ public class Server {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error during login prepare statement");
+            System.out.println("Error in login statement");
+            e.printStackTrace();
         }
         return userLogin;
     }
@@ -106,7 +132,7 @@ public class Server {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error vehicle statement");
         }
         return vehicleList;
     }
@@ -132,8 +158,24 @@ public class Server {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error in insurance offer statement");
         }
         return insuranceOfferList;
+    }
+
+    public void closeSocket() {
+        try {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            if (bufferedWriter != null) {
+                bufferedWriter.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
