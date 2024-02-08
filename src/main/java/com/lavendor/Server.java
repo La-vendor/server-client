@@ -129,18 +129,17 @@ public class Server {
                     System.err.println("Error writing insurance offers to the client: " + e.getMessage());
                 }
             } else {
-                try{
+                try {
                     bufferedWriter.write("User not found in the database.");
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
-                }catch (IOException e) {
+                } catch (IOException e) {
                     closeSocket();
                     System.err.println("Error writing user not found message to the client: " + e.getMessage());
                 }
             }
         }
     }
-
 
 
     public void readDataFromDB(String stringUserId) {
@@ -164,7 +163,7 @@ public class Server {
             System.err.println("Could not establish a connection to the database server: " + e.getMessage());
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error: An I/O exception occurred: " + e.getMessage());
         }
     }
 
