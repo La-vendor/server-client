@@ -40,21 +40,30 @@ public class Server {
 
             // Continuously interact with the connected client
             while (!server.socket.isClosed()) {
-                System.out.println("Waiting for client ID");
-                // Listen for the user ID from the client
-                String userId = server.listenForUserId();
-
-                //
-                if (userId != null) {
+                long userId = 0L;
+                while (userId == 0L && !server.socket.isClosed()) {
+                    System.out.println("Waiting for client ID");
+                    // Listen for the user ID from the client
+                    String stringUserId = server.listenForUserId();
+                    try {
+                        userId = Long.parseLong(stringUserId);
+                    } catch (NumberFormatException e) {
+                        server.sendErrorMessage();
+                    }
+                }
+                if (!server.socket.isClosed()) {
                     server.readDataFromDB(userId);
                     server.writeMessage();
                     server.sendVehicleListToClient();
                     server.sendInsuranceOffersListToClient();
                 }
+
+
             }
             server.closeSocket();
         }
     }
+
 
     public String listenForUserId() {
         String userId;
@@ -82,6 +91,7 @@ public class Server {
             closeSocket();
         }
     }
+
     // Send the vehicle list to the connected client
     private void sendVehicleListToClient() {
         if (user != null) {
@@ -101,6 +111,7 @@ public class Server {
             }
         }
     }
+
     // Send the insurance offers list to the connected client
     private void sendInsuranceOffersListToClient() {
         if (user != null) {
@@ -146,9 +157,20 @@ public class Server {
         }
     }
 
+    private void sendErrorMessage() {
+        try {
+            bufferedWriter.write("Invalid user ID format. Please enter a valid integer.");
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            closeSocket();
+            System.err.println("Error writing message to the client: " + e.getMessage());
+        }
+    }
+
     // Read user data from the database
-    public void readDataFromDB(String stringUserId) {
-        long userId = Long.parseLong(stringUserId);
+    public void readDataFromDB(Long userId) {
+
         user = null;
         try (Connection connection = DataBase.connect()) {
 
