@@ -161,6 +161,9 @@ public class Server {
             }
         } catch (SQLException e) {
             System.err.println("Could not establish a connection to the database server: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
