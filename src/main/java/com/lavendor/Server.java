@@ -88,6 +88,7 @@ public class Server {
                     bufferedWriter.write(vehicleListJSON);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
+                    System.out.println("Vehicles data sent to client");
                 } catch (IOException e) {
                     closeSocket();
                 }
@@ -106,6 +107,7 @@ public class Server {
                     bufferedWriter.write(insuranceOffersListJSON);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
+                    System.out.println("Insurance offers data sent to client \n");
                 } catch (IOException e) {
                     closeSocket();
                 }
@@ -150,7 +152,6 @@ public class Server {
                 user = getUserById(connection, userId);
                 if (user != null) {
                     System.out.println("Requested data for user: " + user.getNick());
-                    System.out.println();
 
                     vehicleList = getVehiclesByLogin(connection, user.getLogin());
 
