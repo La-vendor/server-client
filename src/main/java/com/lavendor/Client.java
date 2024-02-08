@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Client {
+    private static final int PORT = 3254;
 
     private Socket clientSocket;
     private BufferedReader bufferedReader;
@@ -32,15 +33,20 @@ public class Client {
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
-        Socket socket = new Socket("localhost", 3254);
+        // Connect to the server
+        Socket socket = new Socket("localhost", PORT);
         Client client = new Client(socket);
 
+        // Continuously interact with the server
         while (socket.isConnected()) {
             System.out.println("Please enter your user ID");
             String userId = scanner.nextLine();
 
+            // Send user ID to the server
             client.sendUserId(userId);
-            if(client.listenForMessage()){
+
+            // Listen for server response and process data
+            if (client.listenForMessage()) {
                 client.listenForVehicleList();
                 client.listenForInsuranceOffersList();
                 client.displayVehiclesAndOffers();
@@ -48,6 +54,7 @@ public class Client {
         }
     }
 
+    // Send user ID to the server
     public void sendUserId(String userId) {
         try {
             bufferedWriter.write(userId);
@@ -59,6 +66,7 @@ public class Client {
         }
     }
 
+    // Listen for a message from the server
     public boolean listenForMessage() {
         String messageFromServer;
 
@@ -73,6 +81,7 @@ public class Client {
         }
     }
 
+    // Listen for and deserialize the vehicle list from the server
     private void listenForVehicleList() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -85,6 +94,7 @@ public class Client {
         }
     }
 
+    // Listen for and deserialize the insurance offers list from the server
     private void listenForInsuranceOffersList() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -95,7 +105,7 @@ public class Client {
             System.err.println("An error occurred while processing the JSON representation of the insurance offers list: " + e.getMessage());
         }
     }
-
+    // Display vehicles and their associated insurance offers
     private void displayVehiclesAndOffers() {
         for (Vehicle vehicle : vehicleList) {
             System.out.println("     Brand: " + vehicle.getBrand() + ", Model: " + vehicle.getModel());
@@ -110,7 +120,7 @@ public class Client {
             System.out.println();
         }
     }
-
+    // Close socket and associated streams
     private void closeAll() {
         try {
             if (clientSocket != null) {

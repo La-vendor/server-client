@@ -34,13 +34,17 @@ public class Server {
         ServerSocket serverSocket = new ServerSocket(PORT);
         Server server = new Server(serverSocket);
 
+        // Continuously listen for client connections
         while (!serverSocket.isClosed()) {
             server.listenForClientConnection();
 
+            // Continuously interact with the connected client
             while (!server.socket.isClosed()) {
                 System.out.println("Waiting for client ID");
+                // Listen for the user ID from the client
                 String userId = server.listenForUserId();
 
+                //
                 if (userId != null) {
                     server.readDataFromDB(userId);
                     server.writeMessage();
@@ -78,7 +82,7 @@ public class Server {
             closeSocket();
         }
     }
-
+    // Send the vehicle list to the connected client
     private void sendVehicleListToClient() {
         if (user != null) {
             try {
@@ -97,7 +101,7 @@ public class Server {
             }
         }
     }
-
+    // Send the insurance offers list to the connected client
     private void sendInsuranceOffersListToClient() {
         if (user != null) {
             try {
@@ -117,6 +121,7 @@ public class Server {
         }
     }
 
+    // Write an init message to the client
     public void writeMessage() {
         if (bufferedWriter != null) {
             if (user != null) {
@@ -141,7 +146,7 @@ public class Server {
         }
     }
 
-
+    // Read user data from the database
     public void readDataFromDB(String stringUserId) {
         long userId = Long.parseLong(stringUserId);
         user = null;
