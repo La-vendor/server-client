@@ -45,11 +45,14 @@ public class Server {
                     System.out.println("Waiting for client ID");
                     // Listen for the user ID from the client
                     String stringUserId = server.listenForUserId();
-                    try {
-                        userId = Long.parseLong(stringUserId);
-                    } catch (NumberFormatException e) {
-                        server.sendErrorMessage();
+                    if (stringUserId != null) {
+                        try {
+                            userId = Long.parseLong(stringUserId);
+                        } catch (NumberFormatException e) {
+                            server.sendErrorMessage();
+                        }
                     }
+
                 }
                 if (!server.socket.isClosed()) {
                     server.readDataFromDB(userId);
