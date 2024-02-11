@@ -1,5 +1,7 @@
 package com.lavendor.model;
 
+import java.util.Objects;
+
 public class InsuranceOffer {
 
     private long id;
@@ -8,6 +10,13 @@ public class InsuranceOffer {
     private float price;
 
     public InsuranceOffer() {
+    }
+
+    public InsuranceOffer(long id, long vehicleId, String insurer, float price) {
+        this.id = id;
+        this.vehicleId = vehicleId;
+        this.insurer = insurer;
+        this.price = price;
     }
 
     public long getId() {
@@ -49,5 +58,18 @@ public class InsuranceOffer {
                 ", insurer='" + insurer + '\'' +
                 ", price=" + price +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InsuranceOffer that = (InsuranceOffer) o;
+        return id == that.id && vehicleId == that.vehicleId && Float.compare(price, that.price) == 0 && Objects.equals(insurer, that.insurer);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, vehicleId, insurer, price);
     }
 }

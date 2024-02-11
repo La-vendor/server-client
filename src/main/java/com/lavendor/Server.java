@@ -26,44 +26,55 @@ public class Server {
     private List<Vehicle> vehicleList;
     private List<InsuranceOffer> insuranceOfferList;
 
-    public Server(ServerSocket serverSocket) {
+    public Server(ServerSocket serverSocket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         this.serverSocket = serverSocket;
+        this.bufferedReader = bufferedReader;
+        this.bufferedWriter = bufferedWriter;
     }
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(PORT);
-        Server server = new Server(serverSocket);
+        ServerSocket serverSocket;
+        BufferedReader bufferedReader;
+        BufferedWriter bufferedWriter;
 
-        // Continuously listen for client connections
-        while (!serverSocket.isClosed()) {
-            server.listenForClientConnection();
+        try {
+            serverSocket = new ServerSocket(PORT);
+            bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+            bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out));
 
-            // Continuously interact with the connected client
-            while (!server.socket.isClosed()) {
-                long userId = 0L;
-                while (userId == 0L && !server.socket.isClosed()) {
-                    System.out.println("Waiting for client ID");
-                    // Listen for the user ID from the client
-                    String stringUserId = server.listenForUserId();
-                    if (stringUserId != null) {
-                        try {
-                            userId = Long.parseLong(stringUserId);
-                        } catch (NumberFormatException e) {
-                            server.sendErrorMessage();
+            Server server = new Server(serverSocket, bufferedReader, bufferedWriter);
+
+            // Continuously listen for client connections
+            while (!serverSocket.isClosed()) {
+                server.listenForClientConnection();
+
+                // Continuously interact with the connected client
+                while (!server.socket.isClosed()) {
+                    long userId = 0L;
+                    while (userId == 0L && !server.socket.isClosed()) {
+                        System.out.println("Waiting for client ID");
+                        // Listen for the user ID from the client
+                        String stringUserId = server.listenForUserId();
+                        if (stringUserId != null) {
+                            try {
+                                userId = Long.parseLong(stringUserId);
+                            } catch (NumberFormatException e) {
+                                server.sendErrorMessage();
+                            }
                         }
+
                     }
-
+                    if (!server.socket.isClosed()) {
+                        server.readDataFromDB(userId);
+                        server.writeMessage();
+                        server.sendVehicleListToClient();
+                        server.sendInsuranceOffersListToClient();
+                    }
                 }
-                if (!server.socket.isClosed()) {
-                    server.readDataFromDB(userId);
-                    server.writeMessage();
-                    server.sendVehicleListToClient();
-                    server.sendInsuranceOffersListToClient();
-                }
-
-
+                server.closeSocket();
             }
-            server.closeSocket();
+        }catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your needs
         }
     }
 
@@ -96,7 +107,7 @@ public class Server {
     }
 
     // Send the vehicle list to the connected client
-    private void sendVehicleListToClient() {
+    public void sendVehicleListToClient() {
         if (user != null) {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
@@ -140,7 +151,7 @@ public class Server {
         if (bufferedWriter != null) {
             if (user != null) {
                 try {
-                    bufferedWriter.write("Insurance offers for :" + user.getNick());
+                    bufferedWriter.write("Data for :" + user.getNick());
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
                 } catch (IOException e) {
@@ -197,7 +208,7 @@ public class Server {
         }
     }
 
-    private static User getUserById(Connection connection, long userId) {
+    public static User getUserById(Connection connection, long userId) {
         String loginQuery = "SELECT * FROM users WHERE id = ?";
         User user = null;
         try (PreparedStatement loginStatement = connection.prepareStatement(loginQuery)) {
@@ -216,7 +227,7 @@ public class Server {
         return user;
     }
 
-    private static List<Vehicle> getVehiclesByLogin(Connection connection, String login) {
+    public static List<Vehicle> getVehiclesByLogin(Connection connection, String login) {
 
         List<Vehicle> vehicleList = new ArrayList<>();
         String vehiclesQuery = "SELECT * FROM vehicles WHERE vehicles.login = ?";
@@ -240,7 +251,7 @@ public class Server {
         return vehicleList;
     }
 
-    private static List<InsuranceOffer> getInsuranceOffersByLogin(Connection connection, String login) {
+    public static List<InsuranceOffer> getInsuranceOffersByLogin(Connection connection, String login) {
 
         List<InsuranceOffer> insuranceOfferList = new ArrayList<>();
         String insuranceOffersQuery = "SELECT * FROM insurance_offers" +

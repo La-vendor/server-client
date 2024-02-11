@@ -73,7 +73,7 @@ public class Client {
         try {
             messageFromServer = bufferedReader.readLine();
             System.out.println(messageFromServer + "\n");
-            return messageFromServer.contains("Insurance offers for");
+            return messageFromServer.contains("Data for :");
         } catch (IOException e) {
             closeAll();
             System.err.println("Error listening for message from the server: " + e.getMessage());
@@ -107,18 +107,23 @@ public class Client {
     }
     // Display vehicles and their associated insurance offers
     private void displayVehiclesAndOffers() {
-        for (Vehicle vehicle : vehicleList) {
-            System.out.println("     Brand: " + vehicle.getBrand() + ", Model: " + vehicle.getModel());
-            boolean offersCheck = false;
-            for (InsuranceOffer insuranceOffer : insuranceOfferList) {
-                if (insuranceOffer.getVehicleId() == vehicle.getId()) {
-                    System.out.println("            Insurer: " + insuranceOffer.getInsurer() + ", Price: " + insuranceOffer.getPrice());
-                    offersCheck = true;
+        if(!vehicleList.isEmpty()){
+            for (Vehicle vehicle : vehicleList) {
+                System.out.println("     Brand: " + vehicle.getBrand() + ", Model: " + vehicle.getModel());
+                boolean offersCheck = false;
+                for (InsuranceOffer insuranceOffer : insuranceOfferList) {
+                    if (insuranceOffer.getVehicleId() == vehicle.getId()) {
+                        System.out.println("            Insurer: " + insuranceOffer.getInsurer() + ", Price: " + insuranceOffer.getPrice());
+                        offersCheck = true;
+                    }
                 }
+                if (!offersCheck) System.out.println("            *No available insurance offers for this vehicle*");
+                System.out.println();
             }
-            if (!offersCheck) System.out.println("            *No available insurance offers for this vehicle*");
-            System.out.println();
+        }else{
+            System.out.println("No vehicles registered for this user \n");
         }
+
     }
     // Close socket and associated streams
     private void closeAll() {
@@ -136,6 +141,5 @@ public class Client {
             System.err.println("An error occurred while closing the socket and associated streams: " + e.getMessage());
         }
     }
-
 
 }
